@@ -10,9 +10,12 @@ import os
 import uuid
 from app.utils.pagination import paginate_query
 from math import ceil
+from app.utils.file_utils import save_uploaded_file
 
 from sqlalchemy import text
 BASE_URL: str = "http://localhost:8000/"
+
+
 
 def create_multiple_chapters(db: Session, data: CourseChaptersCreate, user_id: int):
     new_chapters = []
@@ -93,10 +96,11 @@ async def create_chapter_content_service(
     meta_data: str = None,
 ):
 
-    #return content_file.filename
     content_path = None
-    if content_file and hasattr(content_file, "filename") and content_file.filename:
-        content_path = await save_file(content_file)
+
+    if content_file and content_file.filename:
+        # file validation + save done inside utils
+        content_path = await save_uploaded_file(content_file, directory="uploads/chapter_contents")
 
     final_content_url = content_path if content_path else content_url
 
@@ -153,9 +157,7 @@ async def create_chapter_content_service(
     })
 
     db.commit()
-    new_id = result.lastrowid
-
-    return new_id
+    return result.lastrowid
 
 
 # Get chapter content by the chapter id
