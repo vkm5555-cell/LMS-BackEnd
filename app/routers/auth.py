@@ -21,7 +21,7 @@ def login(payload: UserLogin, db: Session = Depends(database.get_db)):
     try:
         user, token = service.login(db, payload)
         roles = [r.name for r in user.roles] if user.roles else []
-        print(f"asdfdsfsd {roles}")
+        #print(f"asdfdsfsd {roles}")
         return {
             "access_token": token,
             "token_type": "bearer",

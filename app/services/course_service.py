@@ -93,7 +93,7 @@ class CourseService:
             query = query.filter(Course.course_mode == course_mode)
         if category_id:
             query = query.filter(Course.category_id == category_id)
-
+        query = query.order_by(Course.created_at.desc())
         total = query.count()
         courses = query.offset(skip).limit(limit).all()
 
