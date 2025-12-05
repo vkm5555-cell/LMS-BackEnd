@@ -57,7 +57,7 @@ class UserService:
             user.father_name = payload.father_name
         if payload.mother_name is not None:
             user.mother_name = payload.mother_name
-        if payload.password is not None:
+        if payload.password not in (None, ""):
             user.hashed_password = security.hash_password(payload.password)
 
         db.commit()

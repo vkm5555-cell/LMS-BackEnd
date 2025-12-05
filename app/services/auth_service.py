@@ -49,8 +49,8 @@ class AuthService:
     def login(self, db: Session, login: UserLogin) -> tuple[User, str]:
         user = self.repo.get_by_username(db, login.username)
         #return user, user.hashed_password
-        # if not user or not security.verify_password(login.password, user.hashed_password):
-        #     raise ValueError("Invalid credentials")
+        if not user or not security.verify_password(login.password, user.hashed_password):
+            raise ValueError("Invalid credentials")
 
         self.activity_repo.create(db, user_id=user.id, action="login")
 
