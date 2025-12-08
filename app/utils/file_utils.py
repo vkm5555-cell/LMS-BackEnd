@@ -1,4 +1,6 @@
 import os
+import time
+import random
 from fastapi import UploadFile, HTTPException
 from dotenv import load_dotenv
 from pathlib import Path
@@ -27,13 +29,21 @@ async def validate_file_type(file: UploadFile):
 
 
 async def save_uploaded_file(file: UploadFile, directory: str = "uploads") -> str:
-    """Save uploaded file to a custom directory."""
+    """Save uploaded file with timestamp + random number."""
     await validate_file_type(file)
 
     Path(directory).mkdir(parents=True, exist_ok=True)
 
-    file_path = os.path.join(directory, file.filename)
+    ext = file.filename.split(".")[-1].lower()
 
+    # Create unique file name
+    timestamp = int(time.time() * 1000)         # milliseconds
+    rand = random.randint(1000, 9999)           # 4-digit random number
+    new_filename = f"{timestamp}_{rand}.{ext}"
+
+    file_path = os.path.join(directory, new_filename)
+
+    # Save file
     with open(file_path, "wb") as buffer:
         buffer.write(await file.read())
 

@@ -295,5 +295,26 @@ async def get_all_courses_for_dropdown(
     }
 
 
+@router.get("/courses/list-by-user/all", summary="Get all courses for dropdown")
+async def get_all_courses_for_dropdown(
+    authorization: str = Header(...),
+    db: Session = Depends(database.get_db)
+):
+    # 1. Get logged-in user
+    current_user = get_current_user(authorization, db)
+
+    # 2. Fetch courses created by this user
+    courses = CourseController.get_all_by_user(current_user.id, db)
+
+    return {
+        "success": True,
+        "message": "All courses fetched successfully",
+        "data": [
+            {"id": c.id, "title": c.title}
+            for c in courses
+        ]
+    }
+
+
 
 

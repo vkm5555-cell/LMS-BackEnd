@@ -41,3 +41,4 @@ class Course(Base):
     user = relationship("User", back_populates="courses")
 
     chapters = relationship("CourseChapter", back_populates="course", cascade="all, delete-orphan")
+

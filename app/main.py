@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.models.base import Base
 from app.db.session import db
-from app.routers import auth, students, courses, course_type, role_routes, modules, user_router, course_category, course_chapter_routes, organization, session, semester, student_batches_router, student_batch_assignments, student_course_progress_router, transcript_routes, discussions_router
+from app.routers import auth, students, courses, course_type, role_routes, modules, user_router, course_category, course_chapter_routes, organization, session, semester, student_batches_router, student_batch_assignments, student_course_progress_router, transcript_routes, discussions_router, course_assignments
 import app.models
 # Create tables at startup
 Base.metadata.create_all(bind=db.engine)
@@ -45,3 +45,4 @@ app.include_router(student_batch_assignments.router)
 app.include_router(student_course_progress_router.router)
 app.include_router(transcript_routes.router)
 app.include_router(discussions_router.router)
+app.include_router(course_assignments.router)

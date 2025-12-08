@@ -94,6 +94,10 @@ class CourseController:
     def get_all(db: Session):
         return db.query(Course).order_by(Course.title.asc()).all()
 
+    @staticmethod
+    def get_all_by_user(user_id: int, db: Session):
+        return db.query(Course).filter(Course.user_id == user_id).all()
+
 
 
 
