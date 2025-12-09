@@ -1,8 +1,15 @@
 # app/models/course.py
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Numeric, func
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Numeric, func, Enum
 from sqlalchemy.dialects.mysql import JSON
 from sqlalchemy.orm import relationship
 from app.models.base import Base
+import enum
+
+# Define the status Enum
+class CourseStatus(str, enum.Enum):
+    Active = "Active"
+    Inactive = "Inactive"
+    Deleted = "Deleted"
 
 class Course(Base):
     __tablename__ = "courses"
@@ -28,7 +35,13 @@ class Course(Base):
     course_type = Column(String(50), nullable=False, server_default="free")
     course_mode = Column(String(50), nullable=True)
     course_price = Column(Numeric(10, 2), nullable=True)
+    status = Column(
+        Enum(CourseStatus, name="course_status_enum"),
+        default=CourseStatus.Active,
+        nullable=False
+    )
 
+    deleted_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False, server_default=func.now())
     updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
 

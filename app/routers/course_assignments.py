@@ -86,18 +86,46 @@ def get_assignment(assignment_id: int, db: Session = Depends(database.get_db)):
 
 
 # ------------------------- UPDATE -------------------------
+# ------------------------- UPDATE -------------------------
 @router.put("/{assignment_id}")
-def update_assignment(assignment_id: int, payload: CourseAssignmentUpdate, db: Session = Depends(database.get_db)):
+async def update_assignment(
+    assignment_id: int,
+    course_id: Optional[int] = Form(None),
+    title: Optional[str] = Form(None),
+    description: Optional[str] = Form(None),
+    due_date: Optional[str] = Form(None),
+    max_marks: Optional[int] = Form(None),
+    file_path: Optional[UploadFile] = File(None),
+    authorization: str = Header(...),
+    db: Session = Depends(database.get_db)
+):
     try:
+        current_user = get_current_user(authorization, db)
         service = CourseAssignmentService(db)
-        updated = service.update_assignment(assignment_id, payload.dict(exclude_unset=True))
+
+        # Prepare payload only with provided values
+        payload: Dict[str, Any] = {}
+        if course_id is not None:
+            payload["course_id"] = course_id
+        if title is not None:
+            payload["title"] = title
+        if description is not None:
+            payload["description"] = description
+        if due_date is not None:
+            payload["due_date"] = due_date
+        if max_marks is not None:
+            payload["max_marks"] = max_marks
+        payload["user_id"] = current_user.id  # optional: track who updated
+
+        updated = await service.update_assignment(assignment_id, payload, file=file_path)
         if not updated:
             return {"success": False, "message": "Assignment not found", "data": None}
 
-        return {"success": True, "message": "Assignment updated", "data": updated}
+        return {"success": True, "message": "Assignment updated successfully", "data": updated}
 
     except Exception as e:
         return {"success": False, "message": str(e), "data": None}
+
 
 
 # ------------------------- DELETE -------------------------

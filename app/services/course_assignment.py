@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from app.models.course_assignment import CourseAssignment
 from app.utils.file_utils import save_uploaded_file
 from fastapi import UploadFile
@@ -35,8 +35,8 @@ class CourseAssignmentService:
             search: Optional[str] = None,
             course_id: Optional[int] = None
     ):
-        query = self.db.query(CourseAssignment)
 
+        query = self.db.query(CourseAssignment).filter(CourseAssignment.deleted_at.is_(None))
         if course_id:
             query = query.filter(CourseAssignment.course_id == course_id)
 
@@ -92,11 +92,22 @@ class CourseAssignmentService:
         return self.db.query(CourseAssignment).filter(CourseAssignment.id == assignment_id).first()
 
     # UPDATE
-    def update_assignment(self, assignment_id: int, data: dict) -> Optional[CourseAssignment]:
+    async def update_assignment(
+            self,
+            assignment_id: int,
+            data: Dict[str, Any],
+            file: Optional[UploadFile] = None
+    ) -> Optional[CourseAssignment]:
         assignment = self.get_assignment(assignment_id)
         if not assignment:
             return None
 
+        # Handle file upload if provided
+        if file and file.filename:
+            file_path = await save_uploaded_file(file, directory="uploads/course_assignments/")
+            data["file_path"] = file_path
+
+        # Update fields
         for field, value in data.items():
             setattr(assignment, field, value)
 
@@ -105,11 +116,12 @@ class CourseAssignmentService:
         return assignment
 
     # DELETE
+    # SOFT DELETE (sets deleted_at instead of deleting row)
     def delete_assignment(self, assignment_id: int) -> bool:
         assignment = self.get_assignment(assignment_id)
         if not assignment:
             return False
-
-        self.db.delete(assignment)
+        assignment.status = 'Deleted'
+        assignment.deleted_at = func.now()
         self.db.commit()
         return True
