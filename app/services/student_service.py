@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.schemas.student import StudentCreate
 from app.repositories.student_repo import StudentRepository
+from app.core.config import settings   # <-- import BASE_URL
 
 class StudentService:
     def __init__(self, repo: StudentRepository | None = None):
@@ -50,5 +51,15 @@ class StudentService:
             },
         ).fetchall()
 
-        # convert each row to dict
-        return [dict(row._mapping) for row in result]
+        records = [dict(row._mapping) for row in result]
+
+        # Add full image URL
+        BASE_URL = settings.BASE_URL.rstrip("/")
+
+        for item in records:
+            if item.get("course_thumb"):
+                item["course_thumb"] = f"{BASE_URL}/{item['course_thumb']}"
+            else:
+                item["course_thumb"] = None
+
+        return records
